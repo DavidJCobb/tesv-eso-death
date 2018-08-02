@@ -5,4 +5,4 @@ In vanilla Skyrim, dying forces you to sit around on your butt waiting for your 
 
 This mod implements Elder Scrolls Online-style death in Skyrim. When you're killed, you'll turn into a ghost for about fifteen seconds. In that state, you can't interact with NPCs, locked doors, harvestable flora, containers, or items, and you can't fight. It's an opportunity to retreat from whatever situation you were unprepared for.
 
-SKSE's H and CPP files are not included on this repo. Get them from the SKSE source.
+SKSE's H and CPP files (for the "skse" and "common" projects) are not included on this repo. Get them from the SKSE source.
