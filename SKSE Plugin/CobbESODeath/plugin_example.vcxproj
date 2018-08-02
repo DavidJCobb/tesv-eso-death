@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9eb8df29-5b31-4b24-b018-da2ea45b9150}</ProjectGuid>
+    <RootNamespace>plugin_example</RootNamespace>
+    <SccProjectName>
+    </SccProjectName>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>CobbESODeath</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir);</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\common;$(SolutionDir);$(SolutionDir)\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PLUGIN_EXAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <ForcedIncludeFiles>common/IPrefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\common;$(SolutionDir);$(SolutionDir)\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PLUGIN_EXAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>common/IPrefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Papyrus\Detection.cpp" />
+    <ClCompile Include="Patches\DeathIntercept.cpp" />
+    <ClCompile Include="Patches\Detection.cpp" />
+    <ClCompile Include="ReverseEngineered\ExtraData.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\Actor.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\ActorValueInfo.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\TESForm.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\TESObjectREFR.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\TESPackage.cpp" />
+    <ClCompile Include="ReverseEngineered\Miscellaneous.cpp" />
+    <ClCompile Include="ReverseEngineered\Objects\BGSPrimitive.cpp" />
+    <ClCompile Include="ReverseEngineered\Systems\DefaultObjects.cpp" />
+    <ClCompile Include="ReverseEngineered\Systems\GameData.cpp" />
+    <ClCompile Include="Services\PapyrusFunctorStorage.cpp" />
+    <ClCompile Include="Shared.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Papyrus\Detection.h" />
+    <ClInclude Include="Patches\DeathIntercept.h" />
+    <ClInclude Include="Patches\Detection.h" />
+    <ClInclude Include="ReverseEngineered\Forms\Actor.h" />
+    <ClInclude Include="ReverseEngineered\Forms\ActorValueInfo.h" />
+    <ClInclude Include="ReverseEngineered\Forms\SpellItem.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESEffectShader.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESGlobal.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESObjectLAND.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESPackage.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESWeather.h" />
+    <ClInclude Include="ReverseEngineered\Objects\Actions.h" />
+    <ClInclude Include="ReverseEngineered\Objects\ActiveEffect.h" />
+    <ClInclude Include="ReverseEngineered\Objects\Alias.h" />
+    <ClInclude Include="ReverseEngineered\Objects\BGSPrimitive.h" />
+    <ClInclude Include="ReverseEngineered\Player\PlayerCharacter.h" />
+    <ClInclude Include="ReverseEngineered\Systems\012E32E8.h" />
+    <ClInclude Include="ReverseEngineered\Systems\012E59D4.h" />
+    <ClInclude Include="ReverseEngineered\Systems\01B115D8.h" />
+    <ClInclude Include="ReverseEngineered\Systems\ExteriorCellLoaderTask.h" />
+    <ClInclude Include="ReverseEngineered\Systems\GameInput.h" />
+    <ClInclude Include="ReverseEngineered\Systems\ReferenceEffects.h" />
+    <ClInclude Include="ReverseEngineered\Systems\TESCamera.h" />
+    <ClInclude Include="ReverseEngineered\Systems\01B2E724.h" />
+    <ClInclude Include="ReverseEngineered\Systems\01B9ED08.h" />
+    <ClInclude Include="ReverseEngineered\Systems\ActorAI\base.h" />
+    <ClInclude Include="ReverseEngineered\Systems\DefaultObjects.h" />
+    <ClInclude Include="Services\PapyrusFunctorStorage.h" />
+    <ClInclude Include="ReverseEngineered\ExtraData.h" />
+    <ClInclude Include="ReverseEngineered\Forms\BaseForms\base.h" />
+    <ClInclude Include="ReverseEngineered\Forms\BaseForms\TESObjectACTI.h" />
+    <ClInclude Include="ReverseEngineered\Forms\BaseForms\TESObjectLIGH.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESForm.h" />
+    <ClInclude Include="ReverseEngineered\Forms\BaseForms\TESFurniture.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESObjectCELL.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESObjectREFR.h" />
+    <ClInclude Include="ReverseEngineered\Forms\TESWorldSpace.h" />
+    <ClInclude Include="ReverseEngineered\Miscellaneous.h" />
+    <ClInclude Include="ReverseEngineered\NetImmerse\havok.h" />
+    <ClInclude Include="ReverseEngineered\NetImmerse\controllers.h" />
+    <ClInclude Include="ReverseEngineered\NetImmerse\NiExtraData.h" />
+    <ClInclude Include="ReverseEngineered\NetImmerse\objects.h" />
+    <ClInclude Include="ReverseEngineered\Systems\ChangeForms.h" />
+    <ClInclude Include="ReverseEngineered\Systems\GameData.h" />
+    <ClInclude Include="ReverseEngineered\Systems\Navmesh.h" />
+    <ClInclude Include="ReverseEngineered\Systems\ThreadLocalStorage.h" />
+    <ClInclude Include="Shared.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="exports.def" />
+    <None Include="scripts\ESODeath_Detection.psc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReverseEngineered\Notes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\skse\skse.vcxproj">
+      <Project>{a60fd55d-f740-465e-951d-5fd2ffe4ad32}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
