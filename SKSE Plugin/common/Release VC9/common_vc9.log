@@ -1,0 +1,73 @@
+﻿Build started 8/10/2015 10:13:15 PM.
+     1>Project "C:\Users\David\Documents\Skyrim\SKSE Plugin\CobbSKSE\common\common_vc9.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\David\Documents\Skyrim\SKSE Plugin\CobbSKSE\\" /I"C:\Users\David\Documents\Skyrim\SKSE Plugin\CobbSKSE\\.." /Zi /nologo /W3 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _VC80_UPGRADE=0x0710 /D _MBCS /Gm- /EHsc /MT /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"Release VC9\\" /Fd"Release VC9\vc120.pdb" /Gd /TP /FIcommon/IPrefix.h /analyze- /errorReport:prompt IArchive.cpp IBufferStream.cpp IConsole.cpp IDatabase.cpp IDataStream.cpp IDebugLog.cpp IDirectoryIterator.cpp IDynamicCreate.cpp IErrors.cpp IEvent.cpp IFIFO.cpp IFileStream.cpp IInterlockedLong.cpp IMemPool.cpp IMutex.cpp IPipeClient.cpp IPipeServer.cpp IPrefix.cpp IRangeMap.cpp IReadWriteLock.cpp ISegmentStream.cpp ISingleton.cpp ITextParser.cpp IThread.cpp ITimer.cpp ITypes.cpp
+         IArchive.cpp
+         IBufferStream.cpp
+         IConsole.cpp
+         IDatabase.cpp
+         IDataStream.cpp
+         IDebugLog.cpp
+         IDirectoryIterator.cpp
+         IDynamicCreate.cpp
+         IErrors.cpp
+         IEvent.cpp
+         IFIFO.cpp
+         IFileStream.cpp
+         IInterlockedLong.cpp
+         IMemPool.cpp
+         IMutex.cpp
+         IPipeClient.cpp
+         IPipeServer.cpp
+         IPrefix.cpp
+         IRangeMap.cpp
+         IReadWriteLock.cpp
+         Generating Code...
+         Compiling...
+         ISegmentStream.cpp
+         ISingleton.cpp
+         ITextParser.cpp
+         IThread.cpp
+         ITimer.cpp
+         ITypes.cpp
+         Generating Code...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"Release VC9\common_vc9.lib" /NOLOGO "Release VC9\IArchive.obj"
+         "Release VC9\IBufferStream.obj"
+         "Release VC9\IConsole.obj"
+         "Release VC9\IDatabase.obj"
+         "Release VC9\IDataStream.obj"
+         "Release VC9\IDebugLog.obj"
+         "Release VC9\IDirectoryIterator.obj"
+         "Release VC9\IDynamicCreate.obj"
+         "Release VC9\IErrors.obj"
+         "Release VC9\IEvent.obj"
+         "Release VC9\IFIFO.obj"
+         "Release VC9\IFileStream.obj"
+         "Release VC9\IInterlockedLong.obj"
+         "Release VC9\IMemPool.obj"
+         "Release VC9\IMutex.obj"
+         "Release VC9\IPipeClient.obj"
+         "Release VC9\IPipeServer.obj"
+         "Release VC9\IPrefix.obj"
+         "Release VC9\IRangeMap.obj"
+         "Release VC9\IReadWriteLock.obj"
+         "Release VC9\ISegmentStream.obj"
+         "Release VC9\ISingleton.obj"
+         "Release VC9\ITextParser.obj"
+         "Release VC9\IThread.obj"
+         "Release VC9\ITimer.obj"
+         "Release VC9\ITypes.obj"
+     1>ISingleton.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IRangeMap.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IPrefix.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IInterlockedLong.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IDynamicCreate.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IDatabase.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+     1>IArchive.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+         common_vc9.vcxproj -> C:\Users\David\Documents\Skyrim\SKSE Plugin\CobbSKSE\common\Release VC9\common_vc9.lib
+     1>Done Building Project "C:\Users\David\Documents\Skyrim\SKSE Plugin\CobbSKSE\common\common_vc9.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:12.01
