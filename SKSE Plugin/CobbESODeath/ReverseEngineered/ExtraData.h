@@ -11,6 +11,8 @@
 //
 //  - The third virtual method in BSExtraData* appears to be something like {bool BSExtraData::IsSameAs(BSExtraData* other)}.
 //
+//  - ExtraData type 0x31 is MagicCaster*, a subclass of BSExtraData, per dynamic casts seen in-game.
+//
 //  - ExtraData type 0x32 is used for non-actor magic targets; the BSExtraData* is dynamic-cast to NonActorMagicTarget*, a 
 //    subclass of BSExtraData.
 //
@@ -119,12 +121,26 @@ namespace RE {
          //
          static ExtraCollisionData* Create();
    };
-   class ExtraContainerChanges : public BSExtraData { // We decoded this incorrectly. It's supposed to be sizeof 0x0C. Refer to 0x0040C660.
-      //
-      // TODO: SKSE has this defined; let's look at their definition.
-      //
+   //
+   class InventoryEntryData {
       public:
-         struct Data {
+         TESForm* type;
+         ExtendDataList* extendDataList;
+         SInt32   countDelta;
+
+         MEMBER_FN_PREFIX(InventoryEntryData);
+         DEFINE_MEMBER_FN(GenerateName, const char*, 0x00475AA0);
+         DEFINE_MEMBER_FN(GetSoulLevel, SInt32, 0x00475740); // charge amount
+         DEFINE_MEMBER_FN(GetSoulSize,  UInt32, 0x004756F0); // enum
+         DEFINE_MEMBER_FN(GetValue,     SInt32, 0x00475450);
+         DEFINE_MEMBER_FN(IsOwnedBy,    bool,   0x00477010, TESForm* actor, bool unk1);
+
+         UInt8 GetSoulSize() const;
+   };
+   class ExtraContainerChanges : public BSExtraData {
+      public:
+         typedef tList<InventoryEntryData> EntryDataList;
+         /*struct Data {
             struct Entry {
                struct EntryItems {
                   struct Item {
@@ -145,10 +161,56 @@ namespace RE {
             DEFINE_MEMBER_FN(Subroutine00481AE0,            bool, 0x00481AE0, TESObjectREFR*, UInt32, UInt32); // Drops the specified reference from its container into the world?
             DEFINE_MEMBER_FN(Subroutine00481AE0GuessedBool, bool, 0x00481AE0, bool, UInt32, UInt32); // I'm really not sure what this subroutine's first argument is.
             DEFINE_MEMBER_FN(Subroutine0047E920,            void, 0x0047E920, UInt32, UInt32 myUnk04, TESForm* baseForm, UInt32, UInt32, BaseExtraList*, UInt32, UInt32, UInt32); // Called by 0x00481AE0.
-      };
-      Data* data; // 08
+         };*/
+         class InventoryVisitor {
+            //
+            // NOTE: These visitors see only the ExtraContainerChanges data itself. These are container CHANGES: 
+            // if there are items initially in the container, the visitors won't see them; and if items were 
+            // removed from the container, the visitors will see negative amounts.
+            //
+            public:
+               virtual void Dispose(bool) {}; // 00
+               virtual BOOL Visit(InventoryEntryData*) { return true; }; // 01 // return false to "break" from the loop
+               virtual bool Unk_02(UInt32, UInt32) { return true;  }; // 02
+               virtual void Unk_03(InventoryEntryData*, UInt32, bool* out) {}; // 03 // *out = true; this->Execute(Arg1);
+         };
+         class Data {
+            public:
+               EntryDataList* objList;
+               TESObjectREFR* owner;
+               float totalWeight;
+               float armorWeight;
+
+               MEMBER_FN_PREFIX(Data);
+               DEFINE_MEMBER_FN(ExecuteVisitor, void, 0x00475D20, void* visitor);
+               DEFINE_MEMBER_FN(SetUniqueID,    void, 0x00482050, BaseExtraList* itemList, TESForm* oldForm, TESForm* newForm);
+         };
+         Data* data; // 08
+
+         class CountObjectsWithKeywordFunctor : public InventoryVisitor {
+            public:
+               BGSKeyword* keyword; // 04
+               UInt32      result;  // 08
+         };
+         class FindBaseObjectVisitor : public InventoryVisitor {
+            public:
+               TESForm* baseObject; // 04
+               UInt16   unk08;
+         };
+         class FindBestSoulGemVisitor : public InventoryVisitor { // sizeof == 0xC; used by Bethesda to get the soul gem to fill during a soul trap
+            public:
+               Actor*      soulTrapTarget; // 04
+               TESSoulGem* result = nullptr; // 08
+         };
+         class FindRefrObjectVisitor : public InventoryVisitor {
+            public:
+               UInt32 unk04; // 04
+               UInt16 unk08;
+         };
    };
+   typedef ExtraContainerChanges::Data InventoryChanges; // Bethesda's name for the struct
    static DEFINE_SUBROUTINE(ExtraContainerChanges::Data*, GetExtraContainerChangesData, 0x00476800, TESObjectREFR*);
+   //
    class ExtraDismemberedLimbs : public BSExtraData {
       public:
          enum DismembermentBits : UInt16 {
@@ -269,6 +331,115 @@ namespace RE {
          MEMBER_FN_PREFIX(ExtraLock);
          DEFINE_MEMBER_FN(Subroutine00422390, SInt32, 0x00422390, TESObjectREFR*); // returns lock level?
    };
+   class ExtraMapMarker : public BSExtraData {
+      public:
+         enum {
+            kFlag_IsVisible     = 0x01,
+            kFlag_CanFastTravel = 0x02,
+            kFlag_ShowAllHidden = 0x04, // what does this mean?
+         };
+         enum Type : UInt16 {
+            kMapMarkerType_None = 0,
+            kMapMarkerType_City = 1,
+            kMapMarkerType_Town = 2,
+            kMapMarkerType_Settlement = 3,
+            kMapMarkerType_Cave = 4,
+            kMapMarkerType_Camp = 5,
+            kMapMarkerType_Fort = 6,
+            kMapMarkerType_NordicRuin = 7,
+            kMapMarkerType_DwemerRuin = 8,
+            kMapMarkerType_Shipwreck = 9,
+            kMapMarkerType_Grove = 10,
+            kMapMarkerType_Landmark = 11,
+            kMapMarkerType_DragonLair = 12,
+            kMapMarkerType_Farm = 13,
+            kMapMarkerType_WoodMill = 14,
+            kMapMarkerType_Mine = 15,
+            kMapMarkerType_ImperialCamp = 16,
+            kMapMarkerType_StormcloakCamp = 17,
+            kMapMarkerType_Doomstone = 18,
+            kMapMarkerType_WheatMill = 19,
+            kMapMarkerType_Smelter = 20,
+            kMapMarkerType_Stable = 21,
+            kMapMarkerType_ImperialTower = 22,
+            kMapMarkerType_Clearing = 23,
+            kMapMarkerType_Pass = 24,
+            kMapMarkerType_Altar = 25,
+            kMapMarkerType_Rock = 26,
+            kMapMarkerType_Lighthouse = 27,
+            kMapMarkerType_OrcStronghold = 28,
+            kMapMarkerType_GiantCamp = 29,
+            kMapMarkerType_Shack = 30,
+            kMapMarkerType_NordicTower = 31,
+            kMapMarkerType_NordicDwelling = 32,
+            kMapMarkerType_Docks = 33,
+            kMapMarkerType_Shrine = 34,
+            kMapMarkerType_RiftenCastle = 35,
+            kMapMarkerType_RiftenCapitol = 36,
+            kMapMarkerType_WindhelmCastle = 37,
+            kMapMarkerType_WindhelmCapitol = 38,
+            kMapMarkerType_WhiterunCastle = 39,
+            kMapMarkerType_WhiterunCapitol = 40,
+            kMapMarkerType_SolitudeCastle = 41,
+            kMapMarkerType_SolitudeCapitol = 42,
+            kMapMarkerType_MarkarthCastle = 43,
+            kMapMarkerType_MarkarthCapitol = 44,
+            kMapMarkerType_WinterholdCastle = 45,
+            kMapMarkerType_WinterholdCapitol = 46,
+            kMapMarkerType_MorthalCastle = 47,
+            kMapMarkerType_MorthalCapitol = 48,
+            kMapMarkerType_FalkreathCastle = 49,
+            kMapMarkerType_FalkreathCapitol = 50,
+            kMapMarkerType_DawnstarCastle = 51,
+            kMapMarkerType_DawnstarCapitol = 52,
+            kMapMarkerType_DLC02_TempleOfMiraak = 53,
+            kMapMarkerType_DLC02_RavenRock = 54,
+            kMapMarkerType_DLC02_AllMakerStone = 55,
+            kMapMarkerType_DLC02_TelMithryn = 56,
+            kMapMarkerType_DLC02_ToSkyrim = 57,
+            kMapMarkerType_DLC02_ToSolstheim = 58,
+         };
+         struct Data { // sizeof == 0xC
+            TESFullName name; // 00
+            UInt8  flags; // 08 // flags
+            UInt8  pad09;
+            Type   type; // 0A // possibly type
+
+            MEMBER_FN_PREFIX(Data);
+            //
+            // When using setters, don't forget to call mapMarkerRefr->MarkChanged(0x80000000);
+            //
+            DEFINE_MEMBER_FN(GetFastTravelEnabled, bool, 0x00428FD0);
+            DEFINE_MEMBER_FN(SetFastTravelEnabled, void, 0x00428FE0, bool enabled);
+            DEFINE_MEMBER_FN(GetIsVisible, bool, 0x00428FA0);
+            DEFINE_MEMBER_FN(SetIsVisible, void, 0x00428FB0, bool visible);
+            DEFINE_MEMBER_FN(GetIsShowAllHidden, bool, 0x00429000);
+            DEFINE_MEMBER_FN(GetType, Type, 0x00429010);
+            DEFINE_MEMBER_FN(SetType, void, 0x00429020, Type);
+            //
+            bool IsSettlement() {
+               switch (this->type) {
+                  case kMapMarkerType_City:
+                  case kMapMarkerType_Town:
+                  case kMapMarkerType_Settlement:
+                  case kMapMarkerType_DawnstarCapitol:
+                  case kMapMarkerType_FalkreathCapitol:
+                  case kMapMarkerType_MarkarthCapitol:
+                  case kMapMarkerType_MorthalCapitol:
+                  case kMapMarkerType_RiftenCapitol:
+                  case kMapMarkerType_SolitudeCapitol:
+                  case kMapMarkerType_WhiterunCapitol:
+                  case kMapMarkerType_WindhelmCapitol:
+                  case kMapMarkerType_WinterholdCapitol:
+                  case kMapMarkerType_DLC02_RavenRock:
+                  case kMapMarkerType_DLC02_TelMithryn:
+                     return true;
+               }
+               return false;
+            };
+         };
+         Data data; // 08
+   };
    class ExtraMissingRefIds : public BSExtraData { // sizeof == 0x1C
       //
       // Intimately related to ExtraActivateRef, but I don't understand how.
@@ -358,6 +529,36 @@ namespace RE {
          };
          Entry firstEntry; // 08 // first entry in linked list
    };
+   class ExtraShouldWear : public BSExtraData {
+      public:
+         struct Data {
+            bool  unk00; // remember: a bool is stored as a byte
+            // Could there be padding bytes after?
+         };
+         Data data; // 08
+   };
+   class ExtraSoul : public BSExtraData { // sizeof == 0x0C
+      //
+      // VTBL: 0x010796DC
+      //
+      public:
+         enum SoulSize : UInt8 {
+            kSoulSize_Empty = 0,
+            kSoulSize_Petty = 1,
+            kSoulSize_Lesser,
+            kSoulSize_Common,
+            kSoulSize_Greater,
+            kSoulSize_Grand,
+         };
+         //
+         ExtraSoul(SoulSize arg1) { // based on 0x00422730
+            this->soulSize = arg1;
+         };
+         virtual ~ExtraSoul();
+         //
+         SoulSize soulSize; // 08 // known to be a UInt8; byte gets zero-extended to dword registers in some places
+         UInt8    pad09[3];
+   };
    class ExtraSound : public BSExtraData {
       public:
          struct Data {
@@ -367,14 +568,6 @@ namespace RE {
             UInt8  pad06;
             UInt8  pad07;
             UInt32 unk08;
-         };
-         Data data; // 08
-   };
-   class ExtraShouldWear : public BSExtraData {
-      public:
-         struct Data {
-            bool  unk00; // remember: a bool is stored as a byte
-            // Could there be padding bytes after?
          };
          Data data; // 08
    };
@@ -393,19 +586,6 @@ namespace RE {
       //
       public:
          void* startingWorldOrCell; // 08
-   };
-   class ExtraSoul : public BSExtraData { // sizeof == 0x0C
-      //
-      // VTBL: 0x010796DC
-      //
-      public:
-         ExtraSoul(UInt8 arg1) { // based on 0x00422730
-            this->unk08 = arg1;
-         };
-         virtual ~ExtraSoul();
-         //
-         UInt8 unk08; // soul size?
-         UInt8 pad09[3];
    };
    class ExtraTeleport : public BSExtraData { // sizeof: 0x0C
       public:
@@ -517,7 +697,7 @@ namespace RE {
          DEFINE_MEMBER_FN(GetExtraCellSkyRegion,            void*,   0x0040CDC0); // Return type not verified. Returns NULL/zero if no extra data.
          DEFINE_MEMBER_FN(GetExtraCellWaterType,            void*,   0x0040D390); // Return type not verified. Returns NULL/zero if no extra data.
          DEFINE_MEMBER_FN(GetExtraCharge,                   float,   0x0040C1D0); // Returns charge (or -1 if no extra data) via the FPU stack.
-         DEFINE_MEMBER_FN(GetExtraContainerChanges,         void*,   0x0040C090);
+         DEFINE_MEMBER_FN(GetExtraContainerChangesData,     ExtraContainerChanges::Data*, 0x0040C090); // can be nullptr
          DEFINE_MEMBER_FN(GetExtraCount,                    UInt32,  0x0040C190); // Returns count, or 1 if no extra data.
          DEFINE_MEMBER_FN(GetExtraCreatureAwakeSound,       void,    0x0040C2E0, ExtraSound::Data* out);
          DEFINE_MEMBER_FN(GetExtraDecalGroup,               void*,   0x0040D3B0); // Return type not verified. Returns NULL/zero if no extra data.
@@ -542,7 +722,7 @@ namespace RE {
          DEFINE_MEMBER_FN(GetExtraLocationRefType,          void*,   0x0040D3D0); // Return type not verified. Returns NULL/zero if no extra data.
          DEFINE_MEMBER_FN(GetExtraLock,                     void*,   0x0040C030);
          DEFINE_MEMBER_FN(GetExtraLockList,                 void*,   0x0040C0D0); // Return type not verified. Could be a form ID, I suppose.
-         DEFINE_MEMBER_FN(GetExtraMapMarker,                void*,   0x0040C070);
+         DEFINE_MEMBER_FN(GetExtraMapMarkerData,            ExtraMapMarker::Data*, 0x0040C070);
          DEFINE_MEMBER_FN(GetExtraObjectHealth,             float,   0x0040CB30); // Returns health (or -1.0 if no extra data) via the FPU stack.
          DEFINE_MEMBER_FN(GetExtraOutfitItem,               void*,   0x0040C160); // Returns the extra-data object itself. Typically, retval->unk08 would be either a void* or the start of the data.
          DEFINE_MEMBER_FN(GetExtraOwnership,                void*,   0x0040C0B0); // Returns TESNPC* or TESFaction*.
@@ -564,7 +744,7 @@ namespace RE {
          DEFINE_MEMBER_FN(GetExtraScale,                    float,   0x0040C220); // Returns scale (or 1.0 if no extra data) via the FPU stack.
          DEFINE_MEMBER_FN(GetExtraSceneData,                void*,   0x0040D800); // Return type not verified. Returns NULL/zero if no extra data.
          DEFINE_MEMBER_FN(GetExtraShouldWear,               bool,    0x0040C480, ExtraShouldWear::Data* out);
-         DEFINE_MEMBER_FN(GetExtraSoul,                     SInt32,  0x0040C200); // Returns soul (or 0 if no extra data).
+         DEFINE_MEMBER_FN(GetExtraSoulSize,                 SInt32,  0x0040C200); // Returns soul (or 0 if no extra data).
          DEFINE_MEMBER_FN(GetExtraSound,                    void,    0x0040C2A0, ExtraSound::Data* out);
          DEFINE_MEMBER_FN(GetExtraReferenceHandle,          UInt32*, 0x004110F0, UInt32* out); // Never modify *retval. Usually retval == out; sometimes it == g_invalidRefHandle.
          //
@@ -603,6 +783,7 @@ namespace RE {
          DEFINE_MEMBER_FN(SetExtraFlagByIndex,              void,             0x00416C50, UInt32 index, bool value); // Creates the new extra-data if needed.
          DEFINE_MEMBER_FN(SetExtraGhost,                    ExtraGhost*,      0x0040C940, bool isGhost); // Sets the ghost flag. Creates the new extra-data if needed.
          DEFINE_MEMBER_FN(SetExtraLock,                     ExtraLock*,       0x0040C560, void*);        // Deletes the unk08 on any existing lock data, and then sets a new unk08 pointer. Creates the new extra-data if needed.
+         DEFINE_MEMBER_FN(SetExtraMapMarkerData,            void,             0x0040F960, ExtraMapMarker::Data*); // If argument is NULL, deletes existing data.
          DEFINE_MEMBER_FN(SetExtraSoul,                     ExtraSoul*,       0x0040C820, UInt8 value);  // Sets soul data. Creates the new extra-data if needed.
          DEFINE_MEMBER_FN(SetExtraStartingWorldOrCell,      void,             0x00414DA0, void* startingWorldOrCell); // If argument is NULL, deletes existing data.
          DEFINE_MEMBER_FN(SetExtraTimeLeft,                 ExtraTimeLeft*,   0x0040C6E0, UInt32);       // Creates the new extra-data if needed.
