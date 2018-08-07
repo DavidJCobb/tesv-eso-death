@@ -6,6 +6,7 @@
 #include "skse/NiObjects.h"
 #include "skse/Utilities.h"
 
+class bhkAabbPhantom;
 namespace RE {
    class bhkCollisionObject;
    class bhkRigidBody;
@@ -136,19 +137,19 @@ namespace RE {
          DEFINE_MEMBER_FN(UpdateNode, void, 0x00AAF320, ControllerUpdateContext * ctx);
    };
    static_assert(sizeof(NiAVObject) == 0xA8, "RE::NiAVObject is not the right size!");
-
+   
    class LoadedAreaBound : public NiRefObject {
       public:
          virtual ~LoadedAreaBound();
          //
-         UInt32 unk08; // bhkAabbPhantom*
-         UInt32 unk0C; // bhkAabbPhantom*
-         UInt32 unk10; // bhkAabbPhantom*
-         UInt32 unk14; // bhkAabbPhantom*
-         UInt32 unk18; // bhkAabbPhantom*
-         UInt32 unk1C; // bhkAabbPhantom*
-         UInt32 unk20; // TESObjectCELL*
-         TESObjectCELL* cell; // 24
+         bhkAabbPhantom* unk08; // bhkAabbPhantom*
+         bhkAabbPhantom* unk0C; // bhkAabbPhantom*
+         bhkAabbPhantom* unk10; // bhkAabbPhantom*
+         bhkAabbPhantom* unk14; // bhkAabbPhantom*
+         bhkAabbPhantom* unk18; // bhkAabbPhantom*
+         bhkAabbPhantom* unk1C; // bhkAabbPhantom*
+         TESObjectCELL* unk20; // TESObjectCELL*
+         TESObjectCELL* cell;  // 24
          UInt32 unk28;
          UInt32 unk2C;
          UInt32 unk30;
