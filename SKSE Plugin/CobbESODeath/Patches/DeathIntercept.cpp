@@ -4,10 +4,11 @@
 
 namespace Patches {
    namespace DeathIntercept {
+      extern bool(*g_deathQueryHandler)(RE::Actor* dead) = nullptr;
       extern void(*g_deathInterceptHandler)(RE::Actor* dead) = nullptr;
       extern void(*g_killmoveDoneHandler)(RE::Actor* dead) = nullptr;
 
-      __declspec(naked) bool ShouldBeImmortal(RE::Actor* subject) {
+      /*__declspec(naked) bool ShouldBeImmortal(RE::Actor* subject) {
          _asm {
             mov  eax, 0x01310588; // addr found in reverse-engineering
             mov  eax, dword ptr [eax];
@@ -15,6 +16,13 @@ namespace Patches {
             sete al;
             retn;
          };
+      };*/
+      bool ShouldBeImmortal(RE::Actor* subject) {
+         if (subject != *(RE::Actor**)0x01310588)
+            return false;
+         if (g_deathQueryHandler)
+            return g_deathQueryHandler(subject);
+         return true;
       };
 
       namespace Kill {
@@ -56,10 +64,12 @@ namespace Patches {
          __declspec(naked) void Hook() {
             _asm {
                setne cl; // preserve comparison // cl = (INI:GamePlay:bEssentialTakeNoDamage == true);
+               pushad;
                push  esi;
                call  ShouldBeImmortal;
                add   esp, 4;
                test  al, al;
+               popad;
                jnz   lExit;
                test  cl, cl;
                jz    lEssentialDisabled;
@@ -114,10 +124,12 @@ namespace Patches {
          //
          __declspec(naked) void __stdcall Shim() {
             _asm {
+               pushad;
                push esi;
                call ShouldBeImmortal;
                add  esp, 4;
                test al, al;
+               popad;
                jnz  lExit;
                mov  eax, 0x004D5B90; // return this->CheckDismembermentBit(Arg1);
                jmp  eax;

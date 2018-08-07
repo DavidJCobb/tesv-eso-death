@@ -1,22 +1,41 @@
 #include "Detection.h"
 #include "ReverseEngineered/Forms/Actor.h"
+#include "ReverseEngineered/Forms/TESObjectREFR.h"
 #include "skse/SafeWrite.h"
+#ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
+   #include <algorithm>
+#endif
 
 void DetectionInterceptor::_EditList(RefHandleList& list, RefHandle handle, bool state) {
    if (handle) {
       if (state) {
-         list.insert(handle);
+         #ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
+            list.push_back(handle);
+         #else
+            list.insert(handle);
+         #endif
       } else {
-         list.erase(list.find(handle));
+         #ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
+            list.erase(
+               std::remove_if(
+                  list.begin(),
+                  list.end(),
+                  [handle](UInt32 x) { return x == handle; }
+               ),
+               list.end()
+            );
+         #else
+            list.erase(list.find(handle));
+         #endif
       }
    }
 }
-bool DetectionInterceptor::_SearchList(const RefHandleList& list, RE::Actor* subject) const {
+bool DetectionInterceptor::_SearchList(const RefHandleList& list, RE::Actor* subject) {
 //size_t i = 0;
    for (auto it = list.begin(); it != list.end(); ++it) {
 //_MESSAGE("_SearchList iterating over element %d; iterator is %08X; end is %08X", i, it, list.end());
 //i++;
-      UInt32     handle = (*it);
+      /*UInt32     handle = (*it);
       RE::Actor* ref = nullptr;
       LookupREFRByHandle(&handle, (TESObjectREFR**)&ref);
       if (ref) {
@@ -24,7 +43,10 @@ bool DetectionInterceptor::_SearchList(const RefHandleList& list, RE::Actor* sub
          if (ref == subject)
             return true;
          ref = nullptr; // if ref is non-null, LookupREFRByHandle will decrement its refcount (which we can't rely on because it wouldn't run after the loop)
-      }
+      }*/
+      RE::refr_ptr ref(*it);
+      if (ref && ref == subject)
+         return true;
    }
    return false;
 };
@@ -33,7 +55,7 @@ void DetectionInterceptor::SetActorUnseen(RE::Actor* subject, bool state) {
    //
    UInt32 handle = *g_invalidRefHandle;
    CreateRefHandleByREFR(&handle, (TESObjectREFR*)subject);
-   this->_EditList(this->forceUnseen, handle, state);
+   DetectionInterceptor::_EditList(this->forceUnseen, handle, state);
 //_MESSAGE("Attempted to hide actor %08X from view.", subject->formID);
 }
 void DetectionInterceptor::SetActorUnseeing(RE::Actor* subject, bool state) {
@@ -41,27 +63,27 @@ void DetectionInterceptor::SetActorUnseeing(RE::Actor* subject, bool state) {
    //
    UInt32 handle = *g_invalidRefHandle;
    CreateRefHandleByREFR(&handle, (TESObjectREFR*)subject);
-   this->_EditList(this->forceUnseeing, handle, state);
+   DetectionInterceptor::_EditList(this->forceUnseeing, handle, state);
 //_MESSAGE("Attempted to blind actor %08X.", subject->formID);
 }
 bool DetectionInterceptor::IsActorUnseen(RE::Actor* subject) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   return this->_SearchList(this->forceUnseen, subject);
+   return DetectionInterceptor::_SearchList(this->forceUnseen, subject);
 };
 bool DetectionInterceptor::IsActorUnseeing(RE::Actor* subject) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   return this->_SearchList(this->forceUnseeing, subject);
+   return DetectionInterceptor::_SearchList(this->forceUnseeing, subject);
 };
 void DetectionInterceptor::GetActorStatus(RE::Actor* subject, bool& outUnseen, bool& outUnseeing) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   outUnseen   = this->_SearchList(this->forceUnseen, subject);
-   outUnseeing = this->_SearchList(this->forceUnseeing, subject);
+   outUnseen   = DetectionInterceptor::_SearchList(this->forceUnseen, subject);
+   outUnseeing = DetectionInterceptor::_SearchList(this->forceUnseeing, subject);
 }
 __declspec(noinline) bool DetectionInterceptor::ShouldCancelDetection(RE::Actor* seeker, RE::Actor* target) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   if (this->_SearchList(this->forceUnseeing, seeker))
+   if (DetectionInterceptor::_SearchList(this->forceUnseeing, seeker))
       return true;
-   if (this->_SearchList(this->forceUnseen, target))
+   if (DetectionInterceptor::_SearchList(this->forceUnseen, target))
       return true;
    return false;
 }
@@ -78,7 +100,7 @@ namespace Patches {
       };
       __declspec(naked) void Outer() {
          _asm {
-            mov  edx, dword ptr [ebp + 0x8]; // edx == Arg1
+            mov  edx, dword ptr [ebp + 0x8]; // edx = Arg1;
             mov  eax, dword ptr [ebp + 0xC]; // eax = Arg2;
             push eax;
             push edx;
