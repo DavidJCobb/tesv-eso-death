@@ -7,6 +7,7 @@
 namespace RE {
    class TESForm : public BaseFormComponent {
       public:
+         operator ::TESForm*() const { return (::TESForm*) this; }
          enum { kTypeID = 0 };	// special-case
          //
          enum {

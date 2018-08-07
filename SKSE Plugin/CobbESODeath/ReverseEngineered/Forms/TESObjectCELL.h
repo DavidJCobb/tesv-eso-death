@@ -3,6 +3,7 @@
 #include "ReverseEngineered/Forms/TESForm.h"
 
 namespace RE {
+   struct MapMarkerOperation;
    class TESObjectREFR; // Forward-declare instead of #including, so the compiler doesn't choke on a circular dependency
    class TESWorldSpace;
    class TESObjectCELL : public TESForm {
@@ -121,8 +122,9 @@ namespace RE {
          DEFINE_MEMBER_FN(AddRefToList,      void, 0x004D3EA0, RE::TESObjectREFR* reference, UInt32 unknown); // Second argument is zero. You need to call CellRefLockEnter before, and CellRefLockExit after.
          DEFINE_MEMBER_FN(RemoveRefFromList, void, 0x004CB7B0, RE::TESObjectREFR* reference); // Calls CellRefLockEnter and CellRefLockExit for you.
          //
-         DEFINE_MEMBER_FN(GetOwner,        void*, 0x004C4DC0); // Returns TESNPC* or TESFaction*.
-         DEFINE_MEMBER_FN(GetRegionList,   TESRegionList*, 0x004C23E0, bool createIfMissing);
+         DEFINE_MEMBER_FN(GetOwner,            void*, 0x004C4DC0); // Returns TESNPC* or TESFaction*.
+         DEFINE_MEMBER_FN(GetMapMarkerHandles, void,  0x004C8230, MapMarkerOperation* out);
+         DEFINE_MEMBER_FN(GetRegionList,       TESRegionList*, 0x004C23E0, bool createIfMissing);
          //
          DEFINE_MEMBER_FN(GetExterior3C,   void*, 0x004C0390); // Returns unk3C for exterior cells only.
          DEFINE_MEMBER_FN(GetInterior3C,   void*, 0x004C03A0); // Returns unk3C for interior cells only.

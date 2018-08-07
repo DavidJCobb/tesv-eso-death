@@ -188,7 +188,7 @@ namespace RE {
          // float unk1C4; // killmove time remaining
          // float unk1C8; // stagger time remaining?
          //       ...
-         // bool  unk209; // related to soul trapping -- may indicate whether the actor has already been soul trapped -- getter 0x71FFF0, setter-to-true 
+         // bool  unk209; // related to soul trapping -- may indicate whether the actor has already been soul trapped -- getter 0x71FFF0, setter-to-true 0x71FFE0
          //       ...
          // bool  unk20C;
          //       ...
@@ -714,6 +714,7 @@ namespace RE {
       // a look at Character's VTBL when looking to decode Actor methods.
       //
       public:
+         operator ::Actor*() const { return (::Actor*) this; }
          enum { kTypeID = kFormType_Character };
 
          virtual ~Actor();
@@ -741,8 +742,8 @@ namespace RE {
          virtual void Unk_B6(void);
          virtual UInt32 GetBounty(TESFaction*); // B7
          virtual void Unk_B8(void*, UInt8, UInt8); // could be bools
-         virtual void Unk_B9();
-         virtual void PayBounty(TESFaction*, bool goToJail, bool removeStolenItems); // BA
+         virtual void ServeJailTime(); // B9
+         virtual void PayBounty(TESFaction*, bool removeStolenItems, bool goToJail); // BA
          virtual UInt32 IsCannibalizing(); // BB // Is in cannibal feed action? // returns int, but it's really a bool
          virtual void Unk_BC(void);
          virtual UInt32 IsVampireFeeding(); // BD // Is in vampire feed action? // returns int, but it's really a bool
@@ -1042,7 +1043,7 @@ namespace RE {
          ActorValueState avStateMagicka;     // 15C
          ActorValueState avStateStamina;     // 168
          ActorValueState avStateVoicePoints; // 174
-         UInt32 unk180[(0x198 - 0x180) >> 2];
+         UInt32 unk180[(0x198 - 0x180) >> 2]; // for 180, see code circa 0x006EC46E
          UInt32 unk198; // 198 // bitmask
 
          MEMBER_FN_PREFIX(Actor);
@@ -1074,6 +1075,7 @@ namespace RE {
          DEFINE_MEMBER_FN(HasBeenEaten,          bool,    0x006A8B50);
          DEFINE_MEMBER_FN(HasPerk,               bool,    0x006AA190, BGSPerk* perk);
          DEFINE_MEMBER_FN(HasSpell,              bool,    0x006EAF10, SpellItem* perk);
+         DEFINE_MEMBER_FN(InterruptCast,         void,    0x006E8F60, UInt32 unk_usuallyZero);
          DEFINE_MEMBER_FN(IsAlerted,             bool,    0x006A87C0); // Calls this->processManager->TESV_006F4770();
          DEFINE_MEMBER_FN(IsArrestingTarget,     bool,    0x006B4650);
          DEFINE_MEMBER_FN(IsBlocking,            bool,    0x006BBE60);
@@ -1142,7 +1144,7 @@ namespace RE {
             return !!(this->flags1 & kFlags_IsGuard);
          };
          inline bool IsSwimming() {
-            return this->actorState.flags04 & 0x400 & 0x3FFF == 0x400;
+            return (this->actorState.flags04 & 0x400 & 0x3FFF) == 0x400;
          };
    };
 

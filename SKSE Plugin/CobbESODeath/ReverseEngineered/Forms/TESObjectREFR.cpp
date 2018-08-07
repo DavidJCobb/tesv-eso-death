@@ -435,5 +435,52 @@ namespace RE {
       if (markChanged)
          this->MarkChanged(4);
    };
+   
+   TESObjectREFR* refr_ptr::operator->() {
+      return ref;
+   }
+   refr_ptr::operator bool() const { return ref != nullptr; }
+   refr_ptr::operator RE::TESObjectREFR*() const { return ref; }
+   refr_ptr refr_ptr::operator=(RE::TESObjectREFR* rhs) {
+      _dec();
+      if (ref != rhs) {
+         ref = rhs;
+         _inc();
+      }
+      return *this;
+   }
+   refr_ptr refr_ptr::operator=(const refr_ptr& rhs) {
+      _dec();
+      if (ref != rhs.ref) {
+         ref = rhs.ref;
+         _inc();
+      }
+      return *this;
+   }
+   bool refr_ptr::operator!() {
+      return ref == nullptr;
+   }
+   TESObjectREFR* refr_ptr::abandon() {
+      auto r = this->ref;
+      this->ref = nullptr;
+      return r;
+   };
+   TESObjectREFR* refr_ptr::copy_bare() {
+      _inc();
+      return ref;
+   };
+   void refr_ptr::set_from_handle(const UInt32 handle) {
+      _dec();
+      UInt32 scrap = handle;
+      LookupREFRByHandle(&scrap, (::TESObjectREFR**) &this->ref); // increments the refcount for us
+   }
+   void refr_ptr::set_from_handle(UInt32* handle) {
+      _dec();
+      LookupREFRByHandle(handle, (::TESObjectREFR**) &this->ref); // increments the refcount for us
+   }
+   refr_ptr::~refr_ptr() {
+      _dec();
+      ref = nullptr;
+   };
 };
 

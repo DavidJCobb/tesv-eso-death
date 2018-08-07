@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 
 #include "ReverseEngineered/ExtraData.h"
 #include "ReverseEngineered/Forms/TESForm.h"
@@ -15,6 +16,7 @@ class ExtraMapMarker;
 class MovementParameters;
 class TESContainer;
 namespace RE {
+   class InventoryEntryData;
    class TESObjectCELL; // Forward-declare instead of #including, so the compiler doesn't choke on a circular dependency
    class TESWorldSpace;
 
@@ -94,7 +96,7 @@ namespace RE {
          virtual void	Unk_53(void);
          virtual void	Unk_54(NiPoint3*); // set the StartingPosition ExtraData?
          virtual void	Unk_55(void);
-         virtual UInt32* Unk_56(UInt32* outHandle, void*, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32); // modifies and returns outHandle
+         virtual UInt32* Unk_56(UInt32* outHandle, TESForm* baseItem, bool, bool, BaseExtraList* item, bool, bool, bool); // modifies and returns outHandle
          virtual void	Unk_57(void);
          virtual void	Unk_58(void);
          virtual void	Unk_59(void);
@@ -173,18 +175,19 @@ namespace RE {
          virtual void*	Unk_9F(); // 9F // new function? // getter related to "DecalGroup" extra data
          virtual void	Unk_A0(void*, void*, void*, NiPoint3*); // A0 // new function? // return value unknown; could be void // related to firing an arrow? see Actor
          virtual void	Unk_A1(UInt32 arg1, UInt32 arg2, UInt32 arg3, UInt32 arg4); // A1 // new function? // no-op for TESObjectREFR
-
+         
          struct LoadedState {
             UInt32   unk00;	// 00
-            UInt32   unk04;	// 04
+            float    unk04;	// 04
             UInt32   unk08;	// 08
             UInt32   unk0C;	// 0C
-            float    unk10;	// 10 // related to cell water levels; see subroutine 004D9FE0
-            UInt32   unk14;	// 14
+            float    unk10;	// 10 // related to cell water levels; see subroutine 004D9FE0 // can be FLT_MIN
+            float    unk14;	// 14
             UInt32   unk18;	// 18 // bitmask
-            UInt32   unk1C;	// 1C
+            void*    unk1C;	// 1C
             NiNode*  node;	// 20
             // ... probably more
+            // if there's a 28, it would be a BGSAIWorldLocationPointRadius -- not a pointer
          };
          //
          // Parents:
@@ -230,8 +233,8 @@ namespace RE {
          DEFINE_MEMBER_FN(ClearDestruction,        void,             0x00449630);
          DEFINE_MEMBER_FN(GetBaseContainerData,    TESContainer*,    0x004D4A30); // returns &(this->baseForm.container) for NPCs and container references
          DEFINE_MEMBER_FN(GetBaseScale,            float,            0x004D5230)
-         DEFINE_MEMBER_FN(GetDistance,             float,            0x004D7ED0, TESObjectREFR* other, bool evenIfDisabled, bool);
-         DEFINE_MEMBER_FN(GetDistanceSquared,      float,            0x004D7ED0, TESObjectREFR* other, bool evenIfDisabled, bool);
+         DEFINE_MEMBER_FN(GetDistance,             float,            0x004D7ED0, TESObjectREFR* other, bool evenIfDisabled, bool oftenFalse);
+         DEFINE_MEMBER_FN(GetDistanceSquared,      float,            0x004D7ED0, TESObjectREFR* other, bool evenIfDisabled, bool oftenFalse);
          DEFINE_MEMBER_FN(GetHealth,               float,            0x004E9F90);
          DEFINE_MEMBER_FN(GetHealthPercent,        float,            0x004EA050);
          DEFINE_MEMBER_FN(GetLinkedRef,            TESObjectREFR*,   0x004EA4B0, BGSKeyword*);
@@ -280,4 +283,61 @@ namespace RE {
    //
    //extern DEFINE_SUBROUTINE(BGSDestructibleObjectForm*, GetBGSDestructibleObjectFormForRef, 0x00448090, TESObjectREFR*);
    //extern DEFINE_SUBROUTINE(void, Update3DBasedOnHarvestedFlag, 0x00455BD0, TESObjectREFR*, NiNode* root); // finds and updates the NiSwitchNode in the model
+   
+   class refr_ptr {
+      protected:
+         RE::TESObjectREFR* ref = nullptr;
+         inline void _inc() {
+            if (ref)
+               ref->handleRefObject.IncRef();
+         };
+         inline void _dec() {
+            if (ref)
+               ref->handleRefObject.DecRefHandle();
+         };
+         //
+         struct flag_already_implemented {};
+      public:
+         refr_ptr() {};
+         refr_ptr(RE::TESObjectREFR* a) : ref(a) { _inc(); }
+         refr_ptr(const refr_ptr& a) : ref(a.ref) { _inc(); }
+         refr_ptr(const UInt32& refHandle) { // does NOT exchange the handle; uses a copy
+            this->set_from_handle(refHandle);
+         }
+         //
+         inline static refr_ptr make_from_already_incremented(TESObjectREFR* a) {
+            refr_ptr out;
+            out.set_from_already_incremented(a);
+            return out;
+         };
+         //
+         RE::TESObjectREFR* operator->(); // implies comparison operators with pointers, because it allows for an implicit cast
+         operator bool() const;
+         operator RE::TESObjectREFR*() const;
+         refr_ptr operator=(RE::TESObjectREFR* rhs);
+         refr_ptr operator=(const refr_ptr& rhs);
+         //
+         bool operator!();
+         //
+         ~refr_ptr();
+         //
+         TESObjectREFR* abandon(); // stops refcounting the pointer, and returns it
+         TESObjectREFR* copy_bare();
+         inline TESObjectREFR* get() const { return this->ref; };
+         inline ::TESObjectREFR* get_base() const { return (::TESObjectREFR*) this->ref; };
+         inline void set_from_already_incremented(TESObjectREFR* a) { this->ref = a; };
+         void set_from_handle(const UInt32 handle); // does NOT exchange the handle; uses a copy
+         void set_from_handle(UInt32* handle); // exchanges the handle
+         inline void swap(refr_ptr& other) noexcept {
+            auto a = this->ref;
+            auto b = other.ref;
+            other.ref = a;
+            this->ref = b;
+         };
+         inline long int use_count() const {
+            if (!ref)
+               return 0;
+            return ref->handleRefObject.GetRefCount();
+         };
+   };
 };
