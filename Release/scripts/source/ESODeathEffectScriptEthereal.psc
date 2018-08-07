@@ -23,7 +23,17 @@ Actor _kTarget = None
 ;    them in other situations is a stylistic choice.
 ;
 
+Bool _bAlreadyDispelled = False
 Function BackToLife()
+   If _bAlreadyDispelled
+      ;
+      ; If an external caller dispels us, then OnEffectFinish and OnUpdate both call 
+      ; BackToLife, and the latter call runs with no ActiveEffect* underlying the 
+      ; script object (resulting in Papyrus errors). This lock should prevent that.
+      ;
+      Return
+   EndIf
+   _bAlreadyDispelled = True
    UnregisterForAnimationEvent(_kTarget, "GetUpEnd")
    UnregisterForAnimationEvent(_kTarget, "GetUpExit")
    Game.EnablePlayerControls(False, True, False, False, False, False, False, False)
