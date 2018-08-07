@@ -1,14 +1,15 @@
 #pragma once
-
 #include "skse/GameData.h"
 #include "skse/GameEvents.h"
 #include "skse/GameForms.h"
 #include "skse/GameObjects.h"
 #include "skse/GameReferences.h"
 #include "skse/GameTypes.h"
+#include "skse/NiObjects.h"
 #include "skse/Utilities.h"
 #include "ReverseEngineered/Systems/GameResources.h"
 
+class bhkAabbPhantom;
 class TESObjectCELL;
 
 namespace RE {
@@ -50,7 +51,7 @@ namespace RE {
          TESObjectCELL** GetItem(UInt32 x, UInt32 y) { // based on 0x004743F0
             UInt32 length = this->length;
             if (x >= length || y >= length)
-               return NULL;
+               return nullptr;
             return &(this->cells[(x * length) + y]);
          };
          //
@@ -69,8 +70,9 @@ namespace RE {
          struct ActorBaseDeathCount {
             struct Data {
                TESActorBase* form;
-               SInt16 deathCount;
-               UInt16 pad06;
+               UInt16 deathCount;
+               //
+               // ...?
             };
             Data* data;
             ActorBaseDeathCount* next;
@@ -129,8 +131,8 @@ namespace RE {
 	      UInt8  padB1[3];
 	      UInt32 unkB4; // 4579A000
 	      UInt32 unkB8; // 457D2000
-	      UInt32 worldSpace;               // BC // TESWorldSpace
-         ActorBaseDeathCount deathCounts; // C0 // actually a BStList<struct>
+	      TESWorldSpace* worldSpace;       // BC // TESWorldSpace
+         ActorBaseDeathCount deathCounts; // C0
 	      UInt32 queuedFile;               // C8 // QueuedFile
 	      NiSourceTexture* someTexture;    // CC
 	      UInt32 queuedFile1;              // D0 // QueuedFile
@@ -141,15 +143,16 @@ namespace RE {
 	      LoadedAreaBound* loadedAreaBound;
          //
          MEMBER_FN_PREFIX(TES);
-         DEFINE_MEMBER_FN(CheckCellLoaded,        bool,    0x004312C0, TESObjectCELL* cellToCheck, UInt32 usuallyZero);
+         DEFINE_MEMBER_FN(CheckCellLoaded,         bool,    0x004312C0, TESObjectCELL* cellToCheck, UInt32 usuallyZero);
          DEFINE_MEMBER_FN(DeleteActorBaseDeathCounts, void, 0x00432280);
-         DEFINE_MEMBER_FN(GetActorBaseDeathCount, SInt16,  0x004322E0, TESActorBase*);
-         DEFINE_MEMBER_FN(ModActorBaseDeathCount, void,    0x00433BF0, TESActorBase*, SInt16 changeByHowMuch);
-         DEFINE_MEMBER_FN(Subroutine004317A0,     void*,   0x004317A0);
-         DEFINE_MEMBER_FN(Subroutine004320C0,     void*,   0x004320C0, TESObjectCELL*, UInt32);
+         DEFINE_MEMBER_FN(GetActorBaseDeathCount,  SInt16,  0x004322E0, TESActorBase*);
+         DEFINE_MEMBER_FN(ModActorBaseDeathCount,  void,    0x00433BF0, TESActorBase*, SInt16 changeByHowMuch);
+         DEFINE_MEMBER_FN(Subroutine004317A0,      void*,   0x004317A0);
+         DEFINE_MEMBER_FN(Subroutine004320C0,      void*,   0x004320C0, TESObjectCELL*, UInt32);
          //
          ::TESObjectCELL** CopyGridCells(UInt32* count) const;
    };
+   extern TES** g_TES;
 
    // Note: ModInfo is actually the wrong size. Sizeof should be 0x434.
    //       Constructor is at 0x00446AA0. An instance is created in 0x00446EC0, 

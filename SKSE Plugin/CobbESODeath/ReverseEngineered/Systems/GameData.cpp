@@ -3,6 +3,8 @@
 #include "ReverseEngineered/Miscellaneous.h"
 
 namespace RE {
+   TES** g_TES = (TES**) 0x01B2E864;
+
    /*GridCellArray::GridCellArray() { // Decoded from ASM and listed here purely for my own reference.
       static UInt32* gridsToLoad = (UInt32*)0x01241000;
       {  // Handle grids value.
