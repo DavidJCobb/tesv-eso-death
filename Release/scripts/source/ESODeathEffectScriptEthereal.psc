@@ -23,22 +23,15 @@ Actor _kTarget = None
 ;    them in other situations is a stylistic choice.
 ;
 
-Bool _bAlreadyDispelled = False
 Function BackToLife()
-   If _bAlreadyDispelled
-      ;
-      ; If an external caller dispels us, then OnEffectFinish and OnUpdate both call 
-      ; BackToLife, and the latter call runs with no ActiveEffect* underlying the 
-      ; script object (resulting in Papyrus errors). This lock should prevent that.
-      ;
-      Return
+   If ESODeath_Miscellaneous.EffectExists(Self) ; if we're dispelled multiple times, the ScriptObject may not wrap a valid ActiveEffect* anymore
+      UnregisterForAnimationEvent(_kTarget, "GetUpEnd")
+      UnregisterForAnimationEvent(_kTarget, "GetUpExit")
    EndIf
-   _bAlreadyDispelled = True
-   UnregisterForAnimationEvent(_kTarget, "GetUpEnd")
-   UnregisterForAnimationEvent(_kTarget, "GetUpExit")
    Game.EnablePlayerControls(False, True, False, False, False, False, False, False)
    ESODeath_Detection.SetActorUnseen(_kTarget, False)
    _kTarget.DispelSpell(pkSpell)
+   _kTarget.RemoveSpell(pkSpell)
 EndFunction
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
@@ -57,6 +50,7 @@ Event OnUpdate()
    BackToLife()
 EndEvent
 Event OnEffectFinish(Actor akTarget, Actor akCaster)
+   Debug.Trace("[ESODeath] Ethereal effect finished.")
    BackToLife()
    akTarget.DispelSpell(pkVisuals)
 EndEvent
