@@ -6,9 +6,8 @@ namespace cobb {
    class unique_vector : private std::vector<T> {
       //
       // Conceived as an alternate to std::set, partially because it's probably 
-      // faster to search when dealing with smaller datasets, and partiallly 
-      // because std::set inexplicably segfaults just by iterating when compiled 
-      // in VS2015.
+      // faster to search when dealing with smaller datasets, but mainly to 
+      // troubleshoot an issue with code that acted on std::set.
       //
       private:
          typedef std::vector<T> base_vector;
