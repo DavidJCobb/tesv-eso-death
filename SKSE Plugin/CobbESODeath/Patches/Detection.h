@@ -15,7 +15,7 @@
    // It's pure 100% luck of the draw, but after some stress-testing, 
    // I haven't had any crashes with std::vector.
    //
-   #include <vector>
+   #include "Miscellaneous/unique_vector.h"
 #else
    #include <set>
 #endif
@@ -33,9 +33,18 @@ class DetectionInterceptor { // Make actors impossible to detect, or make them i
    protected:
       typedef UInt32 RefHandle;
       #ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
-         typedef std::vector<RefHandle> RefHandleList;
+         class RefHandleList : public cobb::unique_vector<RefHandle> {
+            public:
+               bool has_actor(RE::Actor*) const;
+               void edit_actor(RefHandle, bool state);
+         };
       #else
-         typedef std::set<RefHandle> RefHandleList;
+         //typedef std::set<RefHandle> RefHandleList;
+         class RefHandleList : public std::set<RefHandle> {
+            public:
+               bool has_actor(RE::Actor*) const;
+               void edit_actor(RefHandle, bool state);
+         };
       #endif
       //
       RefHandleList forceUnseen;

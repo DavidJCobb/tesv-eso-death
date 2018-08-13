@@ -8,15 +8,6 @@ namespace Patches {
       extern void(*g_deathInterceptHandler)(RE::Actor* dead) = nullptr;
       extern void(*g_killmoveDoneHandler)(RE::Actor* dead) = nullptr;
 
-      /*__declspec(naked) bool ShouldBeImmortal(RE::Actor* subject) {
-         _asm {
-            mov  eax, 0x01310588; // addr found in reverse-engineering
-            mov  eax, dword ptr [eax];
-            cmp  eax, dword ptr [esp + 0x4];
-            sete al;
-            retn;
-         };
-      };*/
       bool ShouldBeImmortal(RE::Actor* subject) {
          if (subject != *(RE::Actor**)0x01310588)
             return false;
@@ -39,25 +30,38 @@ namespace Patches {
          };
          __declspec(naked) void Hook() {
             _asm {
+               pushad; // protect ecx
                push esi;
                call ShouldBeImmortal;
                add  esp, 4;
-               test al, al;
-               jz   lNormal;
+               test  al, al;
+               popad; // restore ecx
+               jnz  lIntercept;
+               test ecx, ecx;
+               jz   lVanilla_HasNoAI;
+            lVanilla_HasAI:
+               mov  eax, 0x0071F770; // reproduce patched-over call
+               call eax;
+               mov  ecx, 0x006AC3B2;
+               jmp  ecx;
+            lVanilla_HasNoAI:
+               mov  eax, 0x006AC3B6;
+               jmp  eax;
+               //
+            lIntercept:
                push esi;
                call Intercept;
-               add  esp, 4;
+               add  esp, 4; // clean up after last non-member call
+               //
+               // vanilla return:
+               //
                pop  esi;
                retn 0x10;
-            lNormal:
-               mov  ecx, dword ptr [esi + 0x88]; // ecx = this->processManager; // reproduce patched-over instruction
-               mov  eax, 0x006AC3A9;
-               jmp  eax;
             };
          };
          void Apply() {
-            WriteRelJump(0x006AC3A3, (UInt32)&Hook); // Actor::Kill
-            SafeWrite8  (0x006AC3A8, 0x90); // NOP
+            WriteRelJump(0x006AC3A9, (UInt32)&Hook); // Actor::Kill
+            SafeWrite32 (0x006AC3AE, 0x90909090); // NOP
          };
       };
       namespace PreKill { // maybe unnecessary?
