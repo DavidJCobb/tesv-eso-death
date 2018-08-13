@@ -113,28 +113,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Miscellaneous\strings.cpp" />
     <ClCompile Include="Papyrus\Detection.cpp" />
+    <ClCompile Include="Papyrus\Miscellaneous.cpp" />
     <ClCompile Include="Patches\DeathIntercept.cpp" />
     <ClCompile Include="Patches\Detection.cpp" />
     <ClCompile Include="ReverseEngineered\ExtraData.cpp" />
     <ClCompile Include="ReverseEngineered\Forms\Actor.cpp" />
     <ClCompile Include="ReverseEngineered\Forms\ActorValueInfo.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\HardcodedForms.cpp" />
     <ClCompile Include="ReverseEngineered\Forms\TESForm.cpp" />
     <ClCompile Include="ReverseEngineered\Forms\TESObjectREFR.cpp" />
     <ClCompile Include="ReverseEngineered\Forms\TESPackage.cpp" />
+    <ClCompile Include="ReverseEngineered\Forms\TESWorldSpace.cpp" />
     <ClCompile Include="ReverseEngineered\Miscellaneous.cpp" />
     <ClCompile Include="ReverseEngineered\Objects\BGSPrimitive.cpp" />
     <ClCompile Include="ReverseEngineered\Systems\DefaultObjects.cpp" />
     <ClCompile Include="ReverseEngineered\Systems\GameData.cpp" />
+    <ClCompile Include="Services\INISettings.cpp" />
     <ClCompile Include="Services\PapyrusFunctorStorage.cpp" />
+    <ClCompile Include="Services\SoulGemSystem.cpp" />
     <ClCompile Include="Shared.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Miscellaneous\strings.h" />
+    <ClInclude Include="Miscellaneous\unique_vector.h" />
     <ClInclude Include="Papyrus\Detection.h" />
+    <ClInclude Include="Papyrus\Miscellaneous.h" />
     <ClInclude Include="Patches\DeathIntercept.h" />
     <ClInclude Include="Patches\Detection.h" />
     <ClInclude Include="ReverseEngineered\Forms\Actor.h" />
     <ClInclude Include="ReverseEngineered\Forms\ActorValueInfo.h" />
+    <ClInclude Include="ReverseEngineered\Forms\HardcodedForms.h" />
     <ClInclude Include="ReverseEngineered\Forms\SpellItem.h" />
     <ClInclude Include="ReverseEngineered\Forms\TESEffectShader.h" />
     <ClInclude Include="ReverseEngineered\Forms\TESGlobal.h" />
@@ -146,9 +156,12 @@
     <ClInclude Include="ReverseEngineered\Objects\Alias.h" />
     <ClInclude Include="ReverseEngineered\Objects\BGSPrimitive.h" />
     <ClInclude Include="ReverseEngineered\Player\PlayerCharacter.h" />
+    <ClInclude Include="ReverseEngineered\Player\PlayerSkills.h" />
     <ClInclude Include="ReverseEngineered\Systems\012E32E8.h" />
     <ClInclude Include="ReverseEngineered\Systems\012E59D4.h" />
     <ClInclude Include="ReverseEngineered\Systems\01B115D8.h" />
+    <ClInclude Include="ReverseEngineered\Systems\01B3B2E8.h" />
+    <ClInclude Include="ReverseEngineered\Systems\BSTaskPool.h" />
     <ClInclude Include="ReverseEngineered\Systems\ExteriorCellLoaderTask.h" />
     <ClInclude Include="ReverseEngineered\Systems\GameInput.h" />
     <ClInclude Include="ReverseEngineered\Systems\ReferenceEffects.h" />
@@ -157,6 +170,9 @@
     <ClInclude Include="ReverseEngineered\Systems\01B9ED08.h" />
     <ClInclude Include="ReverseEngineered\Systems\ActorAI\base.h" />
     <ClInclude Include="ReverseEngineered\Systems\DefaultObjects.h" />
+    <ClInclude Include="ReverseEngineered\Types.h" />
+    <ClInclude Include="ReverseEngineered\UI\MessageBoxCallbacks.h" />
+    <ClInclude Include="Services\INISettings.h" />
     <ClInclude Include="Services\PapyrusFunctorStorage.h" />
     <ClInclude Include="ReverseEngineered\ExtraData.h" />
     <ClInclude Include="ReverseEngineered\Forms\BaseForms\base.h" />
@@ -176,11 +192,13 @@
     <ClInclude Include="ReverseEngineered\Systems\GameData.h" />
     <ClInclude Include="ReverseEngineered\Systems\Navmesh.h" />
     <ClInclude Include="ReverseEngineered\Systems\ThreadLocalStorage.h" />
+    <ClInclude Include="Services\SoulGemSystem.h" />
     <ClInclude Include="Shared.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
     <None Include="scripts\ESODeath_Detection.psc" />
+    <None Include="scripts\ESODeath_Miscellaneous.psc" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReverseEngineered\Notes.txt" />

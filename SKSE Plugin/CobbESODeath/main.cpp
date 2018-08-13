@@ -7,13 +7,20 @@
 #pragma comment(lib, "psapi.lib") // what a stupid nuisance
 
 #include "Papyrus/Detection.h"
+#include "Papyrus/Miscellaneous.h"
 #include "Patches/DeathIntercept.h"
 //#include "Patches/DefineHardcodedForms.h"
 #include "Patches/Detection.h"
+#include "ReverseEngineered/ExtraData.h"
+#include "ReverseEngineered/Forms/TESObjectREFR.h"
 #include "ReverseEngineered/Objects/Actions.h"
+#include "ReverseEngineered/Player/PlayerCharacter.h"
+#include "ReverseEngineered/Player/PlayerSkills.h"
 #include "ReverseEngineered/Systems/DefaultObjects.h"
 #include "ReverseEngineered/Systems/GameData.h"
 #include "ReverseEngineered/Systems/012E32E8.h"
+#include "Services/INISettings.h"
+#include "Services/SoulGemSystem.h"
 
 #include "skse/GameEvents.h"
 
@@ -65,11 +72,11 @@ void LocateDeadAbility() {
    _MESSAGE("Got the perk...");
    //
    auto   data = RE::TESDataHandler::GetSingleton();
-   _MESSAGE("DataHandler: %08X", data);
+   _MESSAGE(" - DataHandler: %08X", data);
    auto&  list = data->spellItems;
-   _MESSAGE("List: %08X", &list);
+   _MESSAGE(" - List: %08X", &list);
    size_t count = list.count;
-   _MESSAGE("Count: %u", count);
+   _MESSAGE(" - Count: %u", count);
    for (size_t i = 0; i < count; i++) {
       auto item = list.arr.entries[i];
       if (!item)
@@ -85,6 +92,8 @@ void LocateDeadAbility() {
 
 namespace DeathHandling {
    void _HandleBounties(RE::Actor* subject) {
+      bool  takeStolenGoods = CobbESODeath::INI::Options::bBountyConfiscate.bCurrent;
+      //
       auto  subjectID  = subject->formID;
       auto  singleton  = RE::Unknown012E32E8::GetInstance();
       auto& handleList = singleton->unk028;
@@ -99,18 +108,13 @@ namespace DeathHandling {
             if (crimeFaction) {
                if (subject->GetBounty(crimeFaction)) {
                   const char* name = crimeFaction->fullName.name.data;
-                  subject->PayBounty(crimeFaction, false, true);
+                  subject->PayBounty(crimeFaction, false, takeStolenGoods);
                }
-//const char* name = crimeFaction->fullName.name.data;
-//_MESSAGE("    - Actor is a guard working for crimeFaction %08X (%s).", crimeFaction, name ? name : "");
-            } else {
-//_MESSAGE("    - Actor is a guard but has no crime faction.");
             }
          }
          other->handleRefObject.DecRefHandle(); // LookupREFRByHandle incremented the refcount
          other = nullptr; // if ref is non-null, LookupREFRByHandle will decrement its refcount (which we can't rely on because it wouldn't run after the loop)
       }
-//_MESSAGE("Done checking actors hostile to subject.");
    }
    void _HandleDeathCount(RE::Actor* subject) {
       auto base = DYNAMIC_CAST(subject->baseForm, TESForm, TESActorBase);
@@ -124,29 +128,40 @@ namespace DeathHandling {
       CALL_MEMBER_FN((RE::TES*) *g_TES, ModActorBaseDeathCount)(base, 1);
    }
    //
+   bool ShouldIntercept(RE::Actor* subject) {
+      if (CobbESODeath::INI::Options::bKillIfHardRequirementsNotMet.bCurrent == false)
+         return true;
+      if (CobbESODeath::INI::SoulGem::bEnabled.bCurrent && !SoulGemSystem::HasGem(subject)) {
+         if (!CobbESODeath::INI::ResurrectOffsite::bEnabled.bCurrent || !CobbESODeath::INI::ResurrectOffsite::bPreemptsDeath.bCurrent)
+            return false;
+      }
+      return true;
+   };
    void OnKilled(RE::Actor* subject) {
-      _HandleBounties(subject);
+      if (CobbESODeath::INI::Options::bBountyPay.bCurrent)
+         _HandleBounties(subject);
       //
       bool unused;
       subject->StopCombatAlarm(); // take player out of combat, if possible
       DetectionInterceptor::GetInstance().SetActorUnseen(subject, true); // TODO: magic effect should dispel this OnEffectFinish using a script; we should write code to check for the spell when a save is loaded and handle this
       //
       CALL_MEMBER_FN(RE::Unknown012E32E8::GetInstance(), ResetAllDetection)(&unused);
-      {  // Reset subject health to full
-         //
-         // Don't use ActorValueOwner::SetCurrent; it's misnamed. That function actually sets 
-         // the current AND base values.
-         //
-         //CALL_MEMBER_FN(subject, Subroutine006DFEC0)(0x18, 9999999.0F);
-         CALL_MEMBER_FN(subject, ResetHealthAndLimbs)();
-      }
+      CALL_MEMBER_FN(subject, ResetHealthAndLimbs)();
       //
-      /*if (subject->IsSwimming())*/ {
+      {
          auto ai = subject->processManager;
          if (ai)
             CALL_MEMBER_FN(ai, PushActorAway)(subject, 0.0F, 0.0F, 1.0F, subject->IsSwimming() ? 0.5F : 0.0F);
       }
       _HandleDeathCount(subject);
+      if (CobbESODeath::INI::Options::bReduceSkillsOnDeath.bCurrent) {
+         auto player = (RE::PlayerCharacter*) DYNAMIC_CAST(subject, Actor, PlayerCharacter);
+         if (player) {
+            auto skills = (RE::PlayerSkills*) player->skills;
+            if (skills)
+               CALL_MEMBER_FN(skills, PenalizeForJailTime)(CobbESODeath::INI::Options::iReduceSkillSimulatedBounty.iCurrent);
+         }
+      }
       if (g_deadAbility)
          CALL_MEMBER_FN(subject, AddSpell)(g_deadAbility);
    };
@@ -232,7 +247,7 @@ extern "C" {
       //
       info->infoVersion = PluginInfo::kInfoVersion;
       info->name = "CobbESODeath";
-      info->version = 0x01000000;
+      info->version = 0x01030000;
       {  // Log version number
          auto  v     = info->version;
          UInt8 main  = v >> 0x18;
@@ -278,9 +293,11 @@ extern "C" {
    }
    bool SKSEPlugin_Load(const SKSEInterface* skse)	{
       _MESSAGE("Loaded.");
+      (CobbESODeath::INI::INISettingManager::GetInstance()).Load(); // load and cache INI settings from a file
       //
       //Patches::DefineHardcodedForms::Apply();
       //
+      Patches::DeathIntercept::g_deathQueryHandler     = &DeathHandling::ShouldIntercept;
       Patches::DeathIntercept::g_deathInterceptHandler = &DeathHandling::OnKilled;
       Patches::DeathIntercept::g_killmoveDoneHandler   = &DeathHandling::OnKillmoved;
       //
@@ -288,6 +305,7 @@ extern "C" {
       //
       g_papyrus = (SKSEPapyrusInterface*) skse->QueryInterface(kInterface_Papyrus);
       g_papyrus->Register(CobbPapyrus::Detection::Register);
+      g_papyrus->Register(CobbPapyrus::Miscellaneous::Register);
       //
       return true;
    }
