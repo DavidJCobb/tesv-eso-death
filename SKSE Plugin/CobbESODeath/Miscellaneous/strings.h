@@ -1,9 +1,15 @@
 #pragma once
+#include <cstdint>
+#include <string>
 
 namespace cobb {
+   extern void sprintf(std::string& out, const char* format, ...);
+   extern int  strieq(const std::string& a, const std::string& b);
+
    extern bool string_has_content(const char* str); // any characters besides '\0' and std::isspace-positive glyphs
    extern bool string_says_false(const char* str); // the string spells the case-insensitive word "false", ignoring whitespace
-   extern bool string_to_int(const char* str, SInt32& out);  // returns true if it's a valid integer and no non-whitespace follows the number; out is not modified otherwise
+   extern bool string_to_int(const char* str, int32_t& out, bool allowHexOrDecimal = false); // returns true if it's a valid integer and no non-whitespace follows the number; out is not modified otherwise
+   extern bool string_to_int(const char* str, uint32_t& out, bool allowHexOrDecimal = false);
    extern bool string_to_float(const char* str, float& out); // returns true if it's a valid float   and no non-whitespace follows the number; out is not modified otherwise
    //
    extern void replace_all_of(std::string& subject, const std::string& token, const std::string& target);
@@ -12,7 +18,6 @@ namespace cobb {
    extern std::string& trim(std::string& subject);
    extern void snprintf(std::string& out, const char* format, ...);
    extern SInt32 stricmp(const std::string& a, const std::string& b);
-   extern bool strieq(const std::string& a, const std::string& b);
    extern bool striendswith(const std::string& haystack, const std::string& needle);
 
    //

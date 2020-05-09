@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="common_vc9"
-	ProjectGUID="{f3a88bca-a135-4c34-9aff-7f01e25c6d83}"
+	ProjectGUID="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}"
 	RootNamespace="common"
 	SccProjectName="Perforce Project"
 	SccLocalPath="."

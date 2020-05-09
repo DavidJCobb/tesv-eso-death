@@ -8,7 +8,7 @@ class SoulGemVisitor : public RE::ExtraContainerChanges::InventoryVisitor {
       virtual void Dispose(bool free);
       virtual BOOL Visit(RE::InventoryEntryData* entry);
       //
-      SInt8 bestSoul       = CobbESODeath::INI::SoulGem::iMinimumSoulSize.iCurrent - 1;
+      SInt8 bestSoul       = CobbESODeath::INI::SoulGem::iMinimumSoulSize.current.u - 1;
       bool  bestIsReusable = false;
       RE::InventoryEntryData* bestGem = nullptr;
 };

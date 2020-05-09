@@ -1,24 +1,6 @@
 #pragma once
 #include <mutex>
-//#define COBB_DETECTION_INTERCEPTOR_USES_VECTOR 1
-#ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
-   //
-   // I wanted to be able to easily switch the container used for the 
-   // list of actor handles we're working with.
-   //
-   // The problem we're dealing with here is that if we pass a std::set 
-   // to a function by reference -- a perfectly reasonable thing to do 
-   // -- and then try to iterate over it, the iterator sometimes goes 
-   // bad. Like, in _SearchList, we end up with cases where (it == 3). 
-   // Obviously 3 is not a valid pointer, so we crash.
-   //
-   // It's pure 100% luck of the draw, but after some stress-testing, 
-   // I haven't had any crashes with std::vector.
-   //
-   #include "Miscellaneous/unique_vector.h"
-#else
-   #include <set>
-#endif
+#include <set>
 
 namespace RE {
    class Actor;
@@ -32,20 +14,11 @@ class DetectionInterceptor { // Make actors impossible to detect, or make them i
       };
    protected:
       typedef UInt32 RefHandle;
-      #ifdef COBB_DETECTION_INTERCEPTOR_USES_VECTOR
-         class RefHandleList : public cobb::unique_vector<RefHandle> {
-            public:
-               bool has_actor(RE::Actor*) const;
-               void edit_actor(RefHandle, bool state);
-         };
-      #else
-         //typedef std::set<RefHandle> RefHandleList;
-         class RefHandleList : public std::set<RefHandle> {
-            public:
-               bool has_actor(RE::Actor*) const;
-               void edit_actor(RefHandle, bool state);
-         };
-      #endif
+      class RefHandleList : public std::set<RefHandle> {
+         public:
+            bool has_actor(RE::Actor*) const;
+            void edit_actor(RefHandle, bool state);
+      };
       //
       RefHandleList forceUnseen;
       RefHandleList forceUnseeing;

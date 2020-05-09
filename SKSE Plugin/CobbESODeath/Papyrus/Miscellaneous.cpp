@@ -19,19 +19,19 @@ namespace CobbPapyrus {
    namespace Miscellaneous {
       namespace SoulGem {
          SInt32 CanChooseToUseSoulGem(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*) {
-            if (!CobbESODeath::INI::SoulGem::bGemPreemptsTravel.bCurrent)
+            if (!CobbESODeath::INI::SoulGem::bGemPreemptsTravel.current.b)
                return 0;
-            return (SInt32) CobbESODeath::INI::SoulGem::bAlwaysLetPlayerChoose.bCurrent;
+            return (SInt32) CobbESODeath::INI::SoulGem::bAlwaysLetPlayerChoose.current.b;
          };
          SInt32 GemPreemptsTravel(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*) {
-            return (SInt32) CobbESODeath::INI::SoulGem::bGemPreemptsTravel.bCurrent;
+            return (SInt32) CobbESODeath::INI::SoulGem::bGemPreemptsTravel.current.b;
          };
          SInt32 HasUsableSoulGem(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*, RE::Actor* actor) {
             ERROR_AND_RETURN_0_IF(actor == nullptr, "You must specify an actor.", registry, stackId);
             return (SInt32) SoulGemSystem::HasGem(actor);
          };
          SInt32 SoulGemFunctionalityEnabled(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*) {
-            return (SInt32) CobbESODeath::INI::SoulGem::bEnabled.bCurrent;
+            return (SInt32) CobbESODeath::INI::SoulGem::bEnabled.current.b;
          };
          SInt32 TryConsumeSoulGem(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*, RE::Actor* actor) {
             ERROR_AND_RETURN_0_IF(actor == nullptr, "You must specify an actor.", registry, stackId);
@@ -48,7 +48,7 @@ namespace CobbPapyrus {
             static bool _callback(RE::TESWorldSpace* currentWorld, RE::TESObjectREFR* ref, RE::ExtraMapMarker::Data* extra, void* state) {
                auto pState = (GetMapMarkerFunctor*) state;
 //_MESSAGE("[Papyrus:Miscellaneous::GetNearestMapMarkerTo!FUNCTOR] Marker [%s] type %04X flags %02X...", extra->name.name.data, extra->type, extra->flags);
-               if (CobbESODeath::INI::ResurrectOffsite::bRequireSettlement.bCurrent == false || extra->IsSettlement()) {
+               if (CobbESODeath::INI::ResurrectOffsite::bRequireSettlement.current.b == false || extra->IsSettlement()) {
                   if (pState->minStatus >= 1)
                      if (!CALL_MEMBER_FN(extra, GetIsVisible)())
                         return true; // continue
@@ -90,7 +90,7 @@ namespace CobbPapyrus {
             return functor.result.abandon();
          };
          SInt32 ResurrectOffsiteEnabled(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*) {
-            return (SInt32) CobbESODeath::INI::ResurrectOffsite::bEnabled.bCurrent;
+            return (SInt32) CobbESODeath::INI::ResurrectOffsite::bEnabled.current.b;
          };
       };
       SInt32 Exists(VMClassRegistry* registry, UInt32 stackId, StaticFunctionTag*, TESForm* subject) {

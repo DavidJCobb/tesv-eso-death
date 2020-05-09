@@ -3,6 +3,42 @@
 #include <cctype>
 
 namespace cobb {
+   void sprintf(std::string& out, const char* format, ...) {
+      va_list args;
+      va_start(args, format);
+      va_list safe;
+      va_copy(safe, args);
+      {
+         char b[128];
+         if (vsnprintf(b, sizeof(b), format, args) < 128) {
+            out = b;
+            va_end(safe);
+            va_end(args);
+            return;
+         }
+      }
+      uint32_t s = 256;
+      char* b = (char*)malloc(s);
+      int32_t r = vsnprintf(b, s, format, args);
+      while (r > s) {
+         va_copy(args, safe);
+         s += 20;
+         free(b);
+         b = (char*)malloc(s);
+         r = vsnprintf(b, s, format, args);
+      }
+      out = b;
+      free(b);
+      va_end(safe);
+      va_end(args);
+   };
+   int strieq(const std::string& a, const std::string& b) {
+      int length = a.size();
+      if (length != b.size())
+         return false;
+      return _strnicmp(a.c_str(), b.c_str(), length) == 0;
+   }
+   //
    bool string_has_content(const char* str) {
       char c = *str;
       while (c) {
@@ -64,10 +100,27 @@ namespace cobb {
       out = o;
       return true;
    };
-   bool string_to_int(const char* str, SInt32& out) {
+   bool string_to_int(const char* str, int32_t& out, bool allowHexOrDecimal) {
       errno = 0;
       char* end = nullptr;
-      SInt32 o = strtol(str, &end, 10);
+      uint32_t base = 10;
+      if (allowHexOrDecimal) {
+         const char* p = str;
+         while (char c = *p) {
+            if (isspace(c))
+               continue;
+            if (c == '0') {
+               ++p;
+               c = *p;
+               if (c == 'x' || c == 'X') {
+                  base = 16;
+                  break;
+               }
+            }
+            ++p;
+         }
+      }
+      int32_t o = strtol(str, &end, base);
       if (end == str) // not a number
          return false;
       {  // if any non-whitespace chars after the found value, then the string isn't really a number
@@ -83,42 +136,44 @@ namespace cobb {
          return false;
       out = o;
       return true;
-      //
-      /*// Code retained because it was fun to write:
-      UInt32 i = 0;
-      SInt32 value = 0;
-      bool   validNum = false;
-      bool   foundMinus = false;
-      char c = str[i];
-      if (!c)
+   }
+   bool string_to_int(const char* str, uint32_t& out, bool allowHexOrDecimal) {
+      errno = 0;
+      char* end = nullptr;
+      uint32_t base = 10;
+      if (allowHexOrDecimal) {
+         const char* p = str;
+         while (char c = *p) {
+            if (isspace(c))
+               continue;
+            if (c == '0') {
+               ++p;
+               c = *p;
+               if (c == 'x' || c == 'X') {
+                  base = 16;
+                  break;
+               }
+            }
+            ++p;
+         }
+      }
+      uint32_t o = strtoul(str, &end, base);
+      if (end == str) // not a number
          return false;
-      do {
-         if (c == '=')
-            break;
-         if (c == '-') {
-            if (foundMinus || validNum) {
-               validNum = false;
-               break;
-            }
-            foundMinus = true;
-            continue;
+      {  // if any non-whitespace chars after the found value, then the string isn't really a number
+         char c = *end;
+         while (c) {
+            if (!isspace(c))
+               return false;
+            ++end;
+            c = *end;
          }
-         if (c >= '0' && c <= '9') {
-            if (foundMinus) {
-               validNum = false;
-               break;
-            }
-            validNum = true;
-            value = (value * 10) + (c - '0');
-         } else {
-            validNum = false;
-            break;
-         }
-      } while (c = str[++i]);
-      if (validNum)
-         out = value;
-      return validNum;*/
-   };
+      }
+      if (errno == ERANGE) // out of range
+         return false;
+      out = o;
+      return true;
+   }
 
    void replace_all_of(std::string& subject, const std::string& token, const std::string& target) {
       auto t = token.size();
@@ -198,30 +253,6 @@ namespace cobb {
       if (sA == sB)
          return 0;
       return (SInt32)sA - sB;
-   };
-   bool strieq(const std::string& a, const std::string& b) {
-      return std::equal(
-         a.begin(), a.end(),
-         b.begin(), b.end(),
-         [](char a, char b) {
-            return tolower(a) == tolower(b);
-         }
-      );
-      /*size_t s;
-      {
-         size_t sA = a.size();
-         size_t sB = b.size();
-         if (sA != sB)
-            return false;
-         s = (std::min)(sA, sB);
-      }
-      for (size_t i = 0; i < s; i++) {
-         char c = tolower(a[i]);
-         char d = tolower(b[i]);
-         if (c != d)
-            return false;
-      }
-      return 0;*/
    };
    bool striendswith(const std::string& haystack, const std::string& needle) {
       return std::equal(

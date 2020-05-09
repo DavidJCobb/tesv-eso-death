@@ -31,6 +31,8 @@ static bool g_SKSEVersionSupported = false;
 SKSEPapyrusInterface*   g_papyrus        = nullptr;
 SKSEMessagingInterface* g_ISKSEMessaging = nullptr;
 
+static constexpr uint32_t g_version = 0x01040000;
+
 static SpellItem* g_deadAbility = nullptr;
 void LocateDeadAbility() {
    //
@@ -92,7 +94,7 @@ void LocateDeadAbility() {
 
 namespace DeathHandling {
    void _HandleBounties(RE::Actor* subject) {
-      bool  takeStolenGoods = CobbESODeath::INI::Options::bBountyConfiscate.bCurrent;
+      bool  takeStolenGoods = CobbESODeath::INI::Options::bBountyConfiscate.current.b;
       //
       auto  subjectID  = subject->formID;
       auto  singleton  = RE::Unknown012E32E8::GetInstance();
@@ -129,16 +131,16 @@ namespace DeathHandling {
    }
    //
    bool ShouldIntercept(RE::Actor* subject) {
-      if (CobbESODeath::INI::Options::bKillIfHardRequirementsNotMet.bCurrent == false)
+      if (CobbESODeath::INI::Options::bKillIfHardRequirementsNotMet.current.b == false)
          return true;
-      if (CobbESODeath::INI::SoulGem::bEnabled.bCurrent && !SoulGemSystem::HasGem(subject)) {
-         if (!CobbESODeath::INI::ResurrectOffsite::bEnabled.bCurrent || !CobbESODeath::INI::ResurrectOffsite::bPreemptsDeath.bCurrent)
+      if (CobbESODeath::INI::SoulGem::bEnabled.current.b && !SoulGemSystem::HasGem(subject)) {
+         if (!CobbESODeath::INI::ResurrectOffsite::bEnabled.current.b || !CobbESODeath::INI::ResurrectOffsite::bPreemptsDeath.current.b)
             return false;
       }
       return true;
    };
    void OnKilled(RE::Actor* subject) {
-      if (CobbESODeath::INI::Options::bBountyPay.bCurrent)
+      if (CobbESODeath::INI::Options::bBountyPay.current.b)
          _HandleBounties(subject);
       //
       bool unused;
@@ -154,12 +156,12 @@ namespace DeathHandling {
             CALL_MEMBER_FN(ai, PushActorAway)(subject, 0.0F, 0.0F, 1.0F, subject->IsSwimming() ? 0.5F : 0.0F);
       }
       _HandleDeathCount(subject);
-      if (CobbESODeath::INI::Options::bReduceSkillsOnDeath.bCurrent) {
+      if (CobbESODeath::INI::Options::bReduceSkillsOnDeath.current.b) {
          auto player = (RE::PlayerCharacter*) DYNAMIC_CAST(subject, Actor, PlayerCharacter);
          if (player) {
             auto skills = (RE::PlayerSkills*) player->skills;
             if (skills)
-               CALL_MEMBER_FN(skills, PenalizeForJailTime)(CobbESODeath::INI::Options::iReduceSkillSimulatedBounty.iCurrent);
+               CALL_MEMBER_FN(skills, PenalizeForJailTime)(CobbESODeath::INI::Options::iReduceSkillSimulatedBounty.current.u);
          }
       }
       if (g_deadAbility)
@@ -246,8 +248,8 @@ extern "C" {
       // 0xAABBCCDD = AA.BB.CC.DD with values converted to decimal // major.minor.update.internal-build-or-zero
       //
       info->infoVersion = PluginInfo::kInfoVersion;
-      info->name = "CobbESODeath";
-      info->version = 0x01030000;
+      info->name        = "CobbESODeath";
+      info->version     = g_version;
       {  // Log version number
          auto  v     = info->version;
          UInt8 main  = v >> 0x18;
@@ -293,7 +295,7 @@ extern "C" {
    }
    bool SKSEPlugin_Load(const SKSEInterface* skse)	{
       _MESSAGE("Loaded.");
-      (CobbESODeath::INI::INISettingManager::GetInstance()).Load(); // load and cache INI settings from a file
+      CobbESODeath::INI::get().load(); // load and cache INI settings from a file
       //
       //Patches::DefineHardcodedForms::Apply();
       //

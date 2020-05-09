@@ -39,7 +39,7 @@ BOOL SoulGemVisitor::Visit(RE::InventoryEntryData* entry) {
       auto reusableKywd = RE::BGSDefaultObjectManager::GetSingleton()->objects[0xD8]; // RUSG: ReUsable Soul Gem keyword
       if (reusableKywd && reusableKywd->formType == kFormType_Keyword) {
          isReusable = ((TESSoulGem*)form)->keyword.HasKeyword((BGSKeyword*) reusableKywd);
-         if (isReusable && CobbESODeath::INI::SoulGem::bAllowReusableGems.bCurrent == false) {
+         if (isReusable && CobbESODeath::INI::SoulGem::bAllowReusableGems.current.b == false) {
             return true;
          }
       }
@@ -68,15 +68,15 @@ namespace SoulGemSystem {
       //
       SoulGemVisitor visitor;
       CALL_MEMBER_FN(playerInventory, ExecuteVisitor)(&visitor);
-      if (visitor.bestSoul) {
+      if (auto data = visitor.bestGem) {
          if (visitor.bestIsReusable) {
-            auto extra = (RE::tList<RE::BaseExtraList>*) visitor.bestGem->extendDataList;
+            auto extra = (RE::tList<RE::BaseExtraList>*) data->extendDataList;
             if (extra->items.data)
                CALL_MEMBER_FN(extra->items.data, SetExtraSoul)(0);
          } else {
             RE::BaseExtraList* list;
             {
-               auto lists = (RE::tList<RE::BaseExtraList>*) visitor.bestGem->extendDataList;
+               auto lists = (RE::tList<RE::BaseExtraList>*) data->extendDataList;
                list = lists ? lists->items.data : nullptr;
             }
             UInt32 discard; // ref handle for dropping items into the world (which we're not doing)

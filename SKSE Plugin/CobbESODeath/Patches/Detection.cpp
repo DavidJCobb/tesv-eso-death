@@ -7,15 +7,6 @@
 #endif
 
 bool DetectionInterceptor::RefHandleList::has_actor(RE::Actor* subject) const {
-   /*//
-   for (auto it = this->begin(); it != this->end(); ++it) {
-      RE::refr_ptr ref(*it);
-      if (ref && ref == subject)
-         return true;
-   }
-   return false;
-   //*/
-   //
    UInt32 handle;
    CreateRefHandleByREFR(&handle, (TESObjectREFR*)subject);
    if (handle != *g_invalidRefHandle)
@@ -39,42 +30,30 @@ void DetectionInterceptor::SetActorUnseen(RE::Actor* subject, bool state) {
    //
    UInt32 handle = *g_invalidRefHandle;
    CreateRefHandleByREFR(&handle, (TESObjectREFR*)subject);
-   /*DetectionInterceptor::_EditList(this->forceUnseen, handle, state);*/
    this->forceUnseen.edit_actor(handle, state);
-//_MESSAGE("Attempted to hide actor %08X from view.", subject->formID);
 }
 void DetectionInterceptor::SetActorUnseeing(RE::Actor* subject, bool state) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
    //
    UInt32 handle = *g_invalidRefHandle;
    CreateRefHandleByREFR(&handle, (TESObjectREFR*)subject);
-   /*DetectionInterceptor::_EditList(this->forceUnseeing, handle, state);*/
    this->forceUnseeing.edit_actor(handle, state);
-//_MESSAGE("Attempted to blind actor %08X.", subject->formID);
 }
 bool DetectionInterceptor::IsActorUnseen(RE::Actor* subject) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   /*return DetectionInterceptor::_SearchList(this->forceUnseen, subject);*/
    return this->forceUnseen.has_actor(subject);
 };
 bool DetectionInterceptor::IsActorUnseeing(RE::Actor* subject) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   /*return DetectionInterceptor::_SearchList(this->forceUnseeing, subject);*/
    return this->forceUnseeing.has_actor(subject);
 };
 void DetectionInterceptor::GetActorStatus(RE::Actor* subject, bool& outUnseen, bool& outUnseeing) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   /*outUnseen   = DetectionInterceptor::_SearchList(this->forceUnseen, subject);
-   outUnseeing = DetectionInterceptor::_SearchList(this->forceUnseeing, subject);*/
    outUnseen   = this->forceUnseen.has_actor(subject);
    outUnseeing = this->forceUnseeing.has_actor(subject);
 }
 __declspec(noinline) bool DetectionInterceptor::ShouldCancelDetection(RE::Actor* seeker, RE::Actor* target) {
    std::lock_guard<std::recursive_mutex> scoped_lock(this->lock);
-   /*if (DetectionInterceptor::_SearchList(this->forceUnseeing, seeker))
-      return true;
-   if (DetectionInterceptor::_SearchList(this->forceUnseen, target))
-      return true;*/
    if (this->forceUnseeing.has_actor(seeker))
       return true;
    if (this->forceUnseen.has_actor(target))
